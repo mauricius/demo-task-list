@@ -2,10 +2,10 @@
 
 namespace Tests\Functional\Repositories;
 
+use TestCase;
 use App\Models\User;
 use App\Repositories\DbUserRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
-use TestCase;
 
 class DbUserRepositoryTest extends TestCase
 {
@@ -21,7 +21,7 @@ class DbUserRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->dbUserRepository = new DbUserRepository(new User());
+        $this->dbUserRepository = new DbUserRepository(new User);
     }
 
     /** @test */
@@ -31,9 +31,7 @@ class DbUserRepositoryTest extends TestCase
         $this->buildUsers(1, ['name' => 'Regan']);
         $this->buildUsers(1, ['name' => 'Michael']);
 
-
         $users = $this->dbUserRepository->all();
-
 
         $this->assertCount(3, $users);
         $this->assertEquals('Michael', $users[0]->name);
@@ -48,9 +46,7 @@ class DbUserRepositoryTest extends TestCase
         $this->buildUsers(2, ['name' => 'Regan']);
         $this->buildUsers(2, ['name' => 'Michael']);
 
-
         $users = $this->dbUserRepository->paginate();
-
 
         $this->assertCount(5, $users);
         $this->assertInstanceOf(LengthAwarePaginator::class, $users);
@@ -67,9 +63,7 @@ class DbUserRepositoryTest extends TestCase
     {
         $user = $this->buildUsers(1);
 
-
         $foundUser = $this->dbUserRepository->find($user->id);
-
 
         $this->assertEquals($user->id, $foundUser->id);
     }
@@ -80,7 +74,7 @@ class DbUserRepositoryTest extends TestCase
         $user = $this->dbUserRepository->create([
             'name' => 'User Name',
             'email' => 'email@domain.com',
-            'password' => 'password'
+            'password' => 'password',
         ]);
 
         $this->seeInDatabase('users', ['name' => 'User Name', 'email' => 'email@domain.com']);
@@ -91,9 +85,8 @@ class DbUserRepositoryTest extends TestCase
     {
         $user = $this->buildUsers(1);
 
-
         $updatedUser = $this->dbUserRepository->update($user->id, [
-            'name' => 'Modified Name'
+            'name' => 'Modified Name',
         ]);
 
         $this->seeInDatabase('users', ['id' => $user->id, 'name' => 'Modified Name']);
@@ -104,15 +97,13 @@ class DbUserRepositoryTest extends TestCase
     {
         $user = $this->buildUsers(1);
 
-
         $this->dbUserRepository->delete($user->id);
 
         $this->dontSeeInDatabase('users', ['id' => $user->id]);
     }
 
-
     private function buildUsers($count, $attributes = [])
     {
-        return factory(\App\Models\User::class, $count)->create($attributes);
+        return factory(User::class, $count)->create($attributes);
     }
 }

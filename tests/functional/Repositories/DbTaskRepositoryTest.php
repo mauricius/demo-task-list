@@ -2,12 +2,12 @@
 
 namespace Tests\Functional\Repositories;
 
-use App\Models\Task;
-use App\Repositories\DbTaskRepository;
-use Carbon\Carbon;
-use Illuminate\Pagination\LengthAwarePaginator;
 use TestCase;
+use Carbon\Carbon;
+use App\Models\Task;
 use Tests\BuildTasksTrait;
+use App\Repositories\DbTaskRepository;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DbTaskRepositoryTest extends TestCase
 {
@@ -25,7 +25,7 @@ class DbTaskRepositoryTest extends TestCase
     {
         parent::setUp();
 
-        $this->dbTaskRepository = new DbTaskRepository(new Task());
+        $this->dbTaskRepository = new DbTaskRepository(new Task);
     }
 
     /** @test */
@@ -40,9 +40,7 @@ class DbTaskRepositoryTest extends TestCase
         $date3 = Carbon::create(2003, 12, 21);
         $this->buildTasks(1, ['created_at' => $date3->toDateTimeString()]);
 
-
         $tasks = $this->dbTaskRepository->all();
-
 
         $this->assertCount(3, $tasks);
         $this->assertArrayHasKey('author', $tasks[0]);
@@ -63,9 +61,7 @@ class DbTaskRepositoryTest extends TestCase
         $date3 = Carbon::create(2003, 12, 21);
         $this->buildTasks(2, ['created_at' => $date3->toDateTimeString()]);
 
-
         $tasks = $this->dbTaskRepository->paginate();
-
 
         $this->assertCount(5, $tasks);
         $this->assertInstanceOf(LengthAwarePaginator::class, $tasks);
@@ -82,9 +78,7 @@ class DbTaskRepositoryTest extends TestCase
     {
         $task = $this->buildTasks(1);
 
-
         $foundTask = $this->dbTaskRepository->find($task->id);
-
 
         $this->assertEquals($task->id, $foundTask->id);
     }
@@ -94,7 +88,7 @@ class DbTaskRepositoryTest extends TestCase
     {
         $this->dbTaskRepository->create([
             'name' => 'Task',
-            'done' => false
+            'done' => false,
         ]);
 
         $this->seeInDatabase('tasks', ['name' => 'Task', 'done' => 0]);
@@ -107,7 +101,7 @@ class DbTaskRepositoryTest extends TestCase
 
         $this->dbTaskRepository->update($task->id, [
             'name' => 'Modified Task',
-            'done' => false
+            'done' => false,
         ]);
 
         $this->seeInDatabase('tasks', ['id' => $task->id, 'name' => 'Modified Task', 'done' => 0]);

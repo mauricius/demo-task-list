@@ -4,7 +4,7 @@ namespace Tests\Functional\Http\Controllers;
 
 use TestCase;
 use Tests\BuildTasksTrait;
-
+use App\Contracts\TaskContract;
 
 class TaskControllerTest extends TestCase
 {
@@ -22,9 +22,9 @@ class TaskControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->taskRepository = $this->mock('App\Contracts\TaskContract');
+        $this->taskRepository = $this->mock(TaskContract::class);
     }
-    
+
     /** @test */
     public function it_should_redirect_the_user_to_login_if_not_authenticated()
     {
@@ -45,15 +45,13 @@ class TaskControllerTest extends TestCase
             ->once()
             ->andReturn($tasks);
 
-
         $this->actingAs($user)->get('tasks');
-
 
         $this->assertViewHas('tasks');
         $this->assertCount(3, $this->response->getOriginalContent()->tasks);
         $this->assertEquals('tasks.index', $this->response->getOriginalContent()->getName());
     }
-    
+
     /** @test */
     public function it_should_create_a_new_task()
     {
@@ -69,9 +67,7 @@ class TaskControllerTest extends TestCase
             ->with($input)
             ->andReturn($task);
 
-
         $this->actingAs($user)->post('tasks', $input);
-
 
         $this->assertResponseStatus(302);
         $this->assertSessionHas('success');
@@ -84,19 +80,17 @@ class TaskControllerTest extends TestCase
 
         $user = $this->buildUser();
 
-        $task = $this->buildTasks(1, ["name" => "Task Modified"]);
+        $task = $this->buildTasks(1, ['name' => 'Task Modified']);
 
         $this->taskRepository
             ->shouldReceive('update')
             ->once()
-            ->with($task->id, ["done" => "false", "name" => "Task Modified"])
+            ->with($task->id, ['done' => 'false', 'name' => 'Task Modified'])
             ->andReturn($task);
 
+        $input = ['done' => false, 'name' => 'Task Modified'];
 
-        $input = [ "done" => false, "name" => "Task Modified" ];
-
-        $this->actingAs($user)->put('tasks/' . $task->id, $input);
-
+        $this->actingAs($user)->put('tasks/'.$task->id, $input);
 
         $this->assertResponseStatus(302);
         $this->assertSessionHas('success');
@@ -109,9 +103,9 @@ class TaskControllerTest extends TestCase
 
         $this->withoutMiddleware();
 
-        $task = $this->buildTasks(1, ["done" => false]);
+        $task = $this->buildTasks(1, ['done' => false]);
 
-        $input = ["done" => true];
+        $input = ['done' => true];
 
         $this->taskRepository
             ->shouldReceive('update')
@@ -119,9 +113,7 @@ class TaskControllerTest extends TestCase
             ->with(1, $input)
             ->andReturn($task);
 
-
         $this->actingAs($user)->put('tasks/1', $input);
-
 
         $this->assertResponseStatus(302);
         $this->assertSessionHas('success');
@@ -139,9 +131,7 @@ class TaskControllerTest extends TestCase
             ->once()
             ->with(1);
 
-
         $this->actingAs($user)->delete('tasks/1');
-
 
         $this->assertResponseStatus(302);
         $this->assertSessionHas('success');

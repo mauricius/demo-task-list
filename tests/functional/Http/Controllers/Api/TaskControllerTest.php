@@ -4,6 +4,7 @@ namespace Tests\Functional\Http\Controllers\Api;
 
 use TestCase;
 use Tests\BuildTasksTrait;
+use App\Contracts\TaskContract;
 
 class TaskControllerTest extends TestCase
 {
@@ -21,9 +22,8 @@ class TaskControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->taskRepository = $this->mock('App\Contracts\TaskContract');
+        $this->taskRepository = $this->mock(TaskContract::class);
     }
-
 
     /** @test */
     public function it_should_return_unauthorized_if_api_token_is_missing()
@@ -51,15 +51,13 @@ class TaskControllerTest extends TestCase
         $tasks = $this->buildTasks(3);
 
         $this->taskRepository
-            ->shouldReceive('all')
+            ->shouldReceive('paginate')
             ->once()
             ->andReturn($tasks);
 
+        $this->json('GET', 'api/tasks', [], ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $this->json('GET', 'api/tasks', [], ['Authorization' => 'Bearer ' . $user->api_token]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
@@ -72,7 +70,7 @@ class TaskControllerTest extends TestCase
     {
         $user = $this->buildUser();
 
-        $input = ["name" => "Task Name"];
+        $input = ['name' => 'Task Name'];
 
         $task = $this->buildTasks(1);
 
@@ -82,11 +80,9 @@ class TaskControllerTest extends TestCase
             ->with($input)
             ->andReturn($task);
 
+        $this->post('api/tasks', $input, ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $this->post('api/tasks', $input, [ 'Authorization' => 'Bearer ' . $user->api_token ]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
@@ -106,11 +102,9 @@ class TaskControllerTest extends TestCase
             ->with($task->id)
             ->andReturn($task);
 
+        $this->json('GET', 'api/tasks/'.$task->id, [], ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $this->json('GET', 'api/tasks/' . $task->id, [], ['Authorization' => 'Bearer ' . $user->api_token]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
@@ -128,15 +122,13 @@ class TaskControllerTest extends TestCase
         $this->taskRepository
             ->shouldReceive('update')
             ->once()
-            ->with($task->id, [ "done" => "false", "name" => "Task Modified" ])
+            ->with($task->id, ['done' => 'false', 'name' => 'Task Modified'])
             ->andReturn($task);
 
+        $input = ['done' => false, 'name' => 'Task Modified'];
+        $this->put("api/tasks/{$task->id}", $input, ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $input = [ "done" => false, "name" => "Task Modified" ];
-        $this->put("api/tasks/{$task->id}", $input, [ 'Authorization' => 'Bearer ' . $user->api_token ]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
@@ -150,7 +142,7 @@ class TaskControllerTest extends TestCase
 
         $task = $this->buildTasks(1, ['done' => false]);
 
-        $input = ["done" => true];
+        $input = ['done' => true];
 
         $this->taskRepository
             ->shouldReceive('update')
@@ -158,11 +150,9 @@ class TaskControllerTest extends TestCase
             ->with($task->id, $input)
             ->andReturn($task);
 
+        $this->put("api/tasks/{$task->id}", $input, ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $this->put("api/tasks/{$task->id}", $input, [ 'Authorization' => 'Bearer ' . $user->api_token ]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
@@ -182,11 +172,9 @@ class TaskControllerTest extends TestCase
             ->with($task->id)
             ->andReturn(true);
 
+        $this->delete("api/tasks/{$task->id}", [], ['Authorization' => 'Bearer '.$user->api_token]);
 
-        $this->delete("api/tasks/{$task->id}", [], [ 'Authorization' => 'Bearer ' . $user->api_token ]);
-
-
-        $response = json_decode($this->response->getContent(), TRUE);
+        $response = json_decode($this->response->getContent(), true);
 
         $this->assertResponseOk();
         $this->isJson();
